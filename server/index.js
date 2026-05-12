@@ -3,26 +3,37 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+const authRoutes = require('./routes/auth');
+const studentRoutes = require('./routes/students');
+const announcementRoutes = require('./routes/announcements');
 
-// Middleware
+const app = express();
+
+// Config CORS pour permettre l'accès depuis n'importe où (ou spécifier l'URL de Vercel plus tard)
 app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use('/api/auth', require('./routes/auth'));
+app.use('/api/auth', authRoutes);
+app.use('/api/students', studentRoutes);
+app.use('/api/announcements', announcementRoutes);
 
-// Basic Route
+// Route de base pour vérifier si le serveur fonctionne
 app.get('/', (req, res) => {
-    res.send('MASAR Clone API is running...');
+    res.send('API Massar Pro is running...');
 });
 
-// Database Connection
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('✅ Connected to MongoDB Atlas'))
-    .catch((err) => console.error('❌ MongoDB Connection Error:', err));
+// Connexion MongoDB
+const PORT = process.env.PORT || 5000;
+const MONGODB_URI = process.env.MONGODB_URI;
 
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-});
+mongoose.connect(MONGODB_URI)
+    .then(() => {
+        console.log('✅ Connected to MongoDB Atlas');
+        app.listen(PORT, () => {
+            console.log(`🚀 Server running on port ${PORT}`);
+        });
+    })
+    .catch(err => {
+        console.error('❌ MongoDB connection error:', err);
+    });
